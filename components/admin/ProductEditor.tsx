@@ -46,6 +46,8 @@ type ProductFormState = {
   isOnSale: boolean;
 };
 
+type ToggleKey = "isActive" | "isFeatured" | "isNewArrival" | "isOnSale";
+
 const ui = {
   en: {
     titleCreate: "Create product",
@@ -74,7 +76,8 @@ const ui = {
     setMain: "Set as main",
     remove: "Remove",
     imagePlacement: "How images appear",
-    placementHelp: "The main image appears on product cards and at the top of the product page. Gallery images stay inside the product details slider.",
+    placementHelp:
+      "The main image appears on product cards and at the top of the product page. Gallery images stay inside the product details slider.",
     suggestedSizes: "Suggested sizes",
     colors: "Colors",
     stock: "Stock",
@@ -91,7 +94,8 @@ const ui = {
     productName: "Product name",
     productDescription: "Product description",
     adminTip: "Tip",
-    adminTipText: "Pick the main image first, then upload the rest of the gallery. After saving, the updated product appears on the site right away.",
+    adminTipText:
+      "Pick the main image first, then upload the rest of the gallery. After saving, the updated product appears on the site right away.",
     arabicSupport: "Arabic + English ready",
     mediaSupport: "Live image preview",
     sectionDisplay: "Section display",
@@ -206,6 +210,7 @@ function createInitialForm(): ProductFormState {
 function mapProductToForm(product: Awaited<ReturnType<typeof getProductById>>): ProductFormState {
   const mainImage = product.featuredImage || product.image || DEFAULT_IMAGE;
   const gallery = uniqueStrings(product.images?.length ? [mainImage, ...product.images] : [mainImage]);
+
   return {
     slug: product.slug || "",
     sku: product.sku || "",
@@ -237,15 +242,30 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={`w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-white/25 ${props.className || ""}`} />;
+  return (
+    <input
+      {...props}
+      className={`w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-white/25 ${props.className || ""}`}
+    />
+  );
 }
 
 function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={`w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-white/25 ${props.className || ""}`} />;
+  return (
+    <textarea
+      {...props}
+      className={`w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-white/25 ${props.className || ""}`}
+    />
+  );
 }
 
 function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={`w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none ${props.className || ""}`} />;
+  return (
+    <select
+      {...props}
+      className={`w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none ${props.className || ""}`}
+    />
+  );
 }
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -253,14 +273,26 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3 py-2 text-sm transition ${active ? "border-amber-400/50 bg-amber-400/15 text-amber-100" : "border-white/10 bg-white/5 text-white/75 hover:bg-white/10"}`}
+      className={`rounded-full border px-3 py-2 text-sm transition ${
+        active ? "border-amber-400/50 bg-amber-400/15 text-amber-100" : "border-white/10 bg-white/5 text-white/75 hover:bg-white/10"
+      }`}
     >
       {children}
     </button>
   );
 }
 
-function SectionCard({ title, subtitle, icon, children }: { title: string; subtitle: string; icon: React.ReactNode; children: React.ReactNode }) {
+function SectionCard({
+  title,
+  subtitle,
+  icon,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-[30px] border border-white/10 bg-white/5 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl">
       <div className="mb-5 flex items-start gap-4">
@@ -281,6 +313,7 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
   const { locale, isArabic } = useSiteLocale();
   const t = ui[locale];
   const isEdit = Boolean(productId);
+
   const [form, setForm] = useState<ProductFormState>(createInitialForm);
   const [isLoading, setIsLoading] = useState(isEdit);
   const [isSaving, setIsSaving] = useState(false);
@@ -315,30 +348,70 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
     () => categories.find((category) => category.id === form.categoryId) || null,
     [categories, form.categoryId],
   );
+
   const selectedCategorySlug = selectedCategory?.slug || "";
   const suggestedSizes = SIZE_PRESETS[selectedCategorySlug] || [];
 
   useEffect(() => {
     if (!selectedCategorySlug || !suggestedSizes.length) return;
     if (autoSizedCategorySlug === selectedCategorySlug) return;
+
     setForm((current) => ({ ...current, sizes: suggestedSizes }));
     setAutoSizedCategorySlug(selectedCategorySlug);
   }, [autoSizedCategorySlug, selectedCategorySlug, suggestedSizes]);
 
-  const visibleImages = useMemo(() => uniqueStrings([(form.featuredImage && form.featuredImage !== DEFAULT_IMAGE ? form.featuredImage : ""), ...form.images]), [form.featuredImage, form.images]);
+  const visibleImages = useMemo(
+    () =>
+      uniqueStrings([
+        form.featuredImage && form.featuredImage !== DEFAULT_IMAGE ? form.featuredImage : "",
+        ...form.images,
+      ]),
+    [form.featuredImage, form.images],
+  );
+
+  const toggleItems: Array<{
+    label: string;
+    checked: boolean;
+    key: ToggleKey;
+  }> = [
+    { label: t.active, checked: form.isActive, key: "isActive" },
+    { label: t.featured, checked: form.isFeatured, key: "isFeatured" },
+    { label: t.newArrival, checked: form.isNewArrival, key: "isNewArrival" },
+    { label: t.onSale, checked: form.isOnSale, key: "isOnSale" },
+  ];
 
   const handleFieldChange =
     (field: keyof ProductFormState) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const value = event.target.value;
+
       setForm((current) => {
         const next = { ...current, [field]: value } as ProductFormState;
+
         if (field === "nameEn" && !current.slug.trim()) {
           next.slug = slugify(value);
         }
+
         return next;
       });
     };
+
+  const handleToggleChange = (key: ToggleKey, checked: boolean) => {
+    setForm((current) => {
+      switch (key) {
+        case "isActive":
+          return { ...current, isActive: checked };
+        case "isFeatured":
+          return { ...current, isFeatured: checked };
+        case "isNewArrival":
+          return { ...current, isNewArrival: checked };
+        case "isOnSale":
+          return { ...current, isOnSale: checked };
+        default:
+          return current;
+      }
+    });
+  };
 
   const setFeaturedImage = (image: string) => {
     setForm((current) => ({
@@ -351,6 +424,7 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
   const appendImages = (urls: string[]) => {
     setForm((current) => {
       const merged = uniqueStrings([...current.images, ...urls]);
+
       return {
         ...current,
         featuredImage: current.featuredImage || urls[0] || DEFAULT_IMAGE,
@@ -361,11 +435,14 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
 
   const addImageFromUrl = () => {
     if (!imageUrlInput.trim()) return;
+
     const nextUrl = imageUrlInput.trim();
     appendImages([nextUrl]);
+
     if (!form.featuredImage || form.featuredImage === DEFAULT_IMAGE) {
       setFeaturedImage(nextUrl);
     }
+
     setImageUrlInput("");
   };
 
@@ -373,6 +450,7 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
     setForm((current) => {
       const remaining = current.images.filter((item) => item !== image);
       const nextFeatured = current.featuredImage === image ? remaining[0] || DEFAULT_IMAGE : current.featuredImage;
+
       return {
         ...current,
         featuredImage: nextFeatured,
@@ -384,21 +462,30 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
   const toggleSize = (size: string) => {
     setForm((current) => ({
       ...current,
-      sizes: current.sizes.includes(size) ? current.sizes.filter((item) => item !== size) : uniqueStrings([...current.sizes, size]),
+      sizes: current.sizes.includes(size)
+        ? current.sizes.filter((item) => item !== size)
+        : uniqueStrings([...current.sizes, size]),
     }));
   };
 
   const toggleColor = (color: string) => {
     setForm((current) => ({
       ...current,
-      colors: current.colors.includes(color) ? current.colors.filter((item) => item !== color) : uniqueStrings([...current.colors, color]),
+      colors: current.colors.includes(color)
+        ? current.colors.filter((item) => item !== color)
+        : uniqueStrings([...current.colors, color]),
     }));
   };
 
   const addCustomColor = () => {
     const nextColor = customColor.trim();
     if (!nextColor) return;
-    setForm((current) => ({ ...current, colors: uniqueStrings([...current.colors, nextColor]) }));
+
+    setForm((current) => ({
+      ...current,
+      colors: uniqueStrings([...current.colors, nextColor]),
+    }));
+
     setCustomColor("");
   };
 
@@ -422,7 +509,10 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
       brandId: form.brandId,
       featuredImage: form.featuredImage || DEFAULT_IMAGE,
       image: form.featuredImage || DEFAULT_IMAGE,
-      images: uniqueStrings([...(form.featuredImage && form.featuredImage !== DEFAULT_IMAGE ? [form.featuredImage] : []), ...form.images]),
+      images: uniqueStrings([
+        ...(form.featuredImage && form.featuredImage !== DEFAULT_IMAGE ? [form.featuredImage] : []),
+        ...form.images,
+      ]),
       sizes: uniqueStrings(form.sizes),
       colors: uniqueStrings(form.colors),
       stock: Number(form.stock || 0),
@@ -441,6 +531,7 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
       } else {
         await createProduct(payload);
       }
+
       router.push("/admin/products");
       router.refresh();
     } catch (saveError) {
@@ -496,6 +587,7 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
                   ))}
                 </Select>
               </div>
+
               <div>
                 <FieldLabel>{t.brand}</FieldLabel>
                 <Select value={form.brandId} onChange={handleFieldChange("brandId")} disabled={optionsLoading || !brands.length}>
@@ -535,7 +627,11 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-3">
                 <FieldLabel>{t.mainImage}</FieldLabel>
-                <img src={form.featuredImage || DEFAULT_IMAGE} alt="Featured preview" className="h-64 w-full rounded-[28px] border border-white/10 bg-black/20 object-cover" />
+                <img
+                  src={form.featuredImage || DEFAULT_IMAGE}
+                  alt="Featured preview"
+                  className="h-64 w-full rounded-[28px] border border-white/10 bg-black/20 object-cover"
+                />
                 <UploadButton
                   onUploaded={(urls) => {
                     appendImages(urls);
@@ -554,10 +650,20 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
                       <div key={image} className="rounded-2xl border border-white/10 bg-white/[0.03] p-2">
                         <img src={image} alt="Gallery item" className="h-28 w-full rounded-xl object-cover" />
                         <div className="mt-2 grid gap-2">
-                          <button type="button" onClick={() => setFeaturedImage(image)} className={`rounded-xl px-3 py-2 text-xs font-semibold ${form.featuredImage === image ? "bg-emerald-500/20 text-emerald-100" : "bg-white/10 text-white/80"}`}>
+                          <button
+                            type="button"
+                            onClick={() => setFeaturedImage(image)}
+                            className={`rounded-xl px-3 py-2 text-xs font-semibold ${
+                              form.featuredImage === image ? "bg-emerald-500/20 text-emerald-100" : "bg-white/10 text-white/80"
+                            }`}
+                          >
                             {form.featuredImage === image ? `${t.setMain} • ${isArabic ? "مفعلة" : "Active"}` : t.setMain}
                           </button>
-                          <button type="button" onClick={() => removeImage(image)} className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-100">
+                          <button
+                            type="button"
+                            onClick={() => removeImage(image)}
+                            className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-100"
+                          >
                             {t.remove}
                           </button>
                         </div>
@@ -567,6 +673,7 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
                     <div className="col-span-2 rounded-2xl border border-dashed border-white/10 p-5 text-sm text-white/45">{t.noImages}</div>
                   )}
                 </div>
+
                 <UploadButton onUploaded={appendImages} label={t.uploadGallery} helperText={t.uploadHelp} multiple maxFiles={20} />
               </div>
             </div>
@@ -593,7 +700,9 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
               <FieldLabel>{t.suggestedSizes}</FieldLabel>
               <div className="flex flex-wrap gap-2">
                 {suggestedSizes.map((size) => (
-                  <Chip key={size} active={form.sizes.includes(size)} onClick={() => toggleSize(size)}>{size}</Chip>
+                  <Chip key={size} active={form.sizes.includes(size)} onClick={() => toggleSize(size)}>
+                    {size}
+                  </Chip>
                 ))}
               </div>
             </div>
@@ -602,15 +711,19 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
               <FieldLabel>{t.colors}</FieldLabel>
               <div className="flex flex-wrap gap-2">
                 {COLOR_SUGGESTIONS.map((color) => (
-                  <Chip key={color} active={form.colors.includes(color)} onClick={() => toggleColor(color)}>{color}</Chip>
+                  <Chip key={color} active={form.colors.includes(color)} onClick={() => toggleColor(color)}>
+                    {color}
+                  </Chip>
                 ))}
               </div>
+
               <div className="mt-3 flex flex-col gap-3 md:flex-row">
                 <Input value={customColor} onChange={(event) => setCustomColor(event.target.value)} placeholder={t.colorsPlaceholder} />
                 <button type="button" onClick={addCustomColor} className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white">
                   {isArabic ? "إضافة لون" : "Add color"}
                 </button>
               </div>
+
               {!!form.colors.length && <p className="mt-3 text-sm text-white/55">{form.colors.join(" • ")}</p>}
             </div>
 
@@ -634,18 +747,16 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
             </div>
 
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {[
-                [t.active, form.isActive, "isActive"],
-                [t.featured, form.isFeatured, "isFeatured"],
-                [t.newArrival, form.isNewArrival, "isNewArrival"],
-                [t.onSale, form.isOnSale, "isOnSale"],
-              ].map(([label, checked, key]) => (
-                <label key={String(key)} className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">
+              {toggleItems.map(({ label, checked, key }) => (
+                <label
+                  key={key}
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80"
+                >
                   <span>{label}</span>
                   <input
                     type="checkbox"
-                    checked={Boolean(checked)}
-                    onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.checked }))}
+                    checked={checked}
+                    onChange={(event) => handleToggleChange(key, event.target.checked)}
                     className="h-4 w-4"
                   />
                 </label>
@@ -661,29 +772,48 @@ export default function ProductEditor({ productId }: ProductEditorProps) {
               <div className="space-y-4 p-5">
                 <div>
                   <div className="text-xs uppercase tracking-[0.18em] text-amber-200">{t.productName}</div>
-                  <h3 className="mt-2 text-2xl font-black text-white">{isArabic ? form.nameAr || form.nameEn || "Cavo Product" : form.nameEn || form.nameAr || "Cavo Product"}</h3>
-                  <p className="mt-2 text-sm text-white/60">{isArabic ? form.shortDescriptionAr || form.shortDescriptionEn : form.shortDescriptionEn || form.shortDescriptionAr}</p>
+                  <h3 className="mt-2 text-2xl font-black text-white">
+                    {isArabic ? form.nameAr || form.nameEn || "Cavo Product" : form.nameEn || form.nameAr || "Cavo Product"}
+                  </h3>
+                  <p className="mt-2 text-sm text-white/60">
+                    {isArabic ? form.shortDescriptionAr || form.shortDescriptionEn : form.shortDescriptionEn || form.shortDescriptionAr}
+                  </p>
                 </div>
 
                 <div>
                   <div className="text-xs uppercase tracking-[0.18em] text-amber-200">{t.productDescription}</div>
-                  <p className="mt-2 text-sm leading-7 text-white/70">{isArabic ? form.descriptionAr || form.descriptionEn : form.descriptionEn || form.descriptionAr}</p>
+                  <p className="mt-2 text-sm leading-7 text-white/70">
+                    {isArabic ? form.descriptionAr || form.descriptionEn : form.descriptionEn || form.descriptionAr}
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {form.sizes.slice(0, 8).map((size) => <span key={size} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/75">{size}</span>)}
+                  {form.sizes.slice(0, 8).map((size) => (
+                    <span key={size} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/75">
+                      {size}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
 
             <div className="rounded-[24px] border border-emerald-400/15 bg-emerald-400/5 p-4 text-sm leading-6 text-white/75">
-              <div className="mb-2 flex items-center gap-2 font-bold text-white"><Check className="h-4 w-4 text-emerald-300" />{t.adminTip}</div>
+              <div className="mb-2 flex items-center gap-2 font-bold text-white">
+                <Check className="h-4 w-4 text-emerald-300" />
+                {t.adminTip}
+              </div>
               <p>{t.adminTipText}</p>
             </div>
 
-            {error ? <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">{error}</div> : null}
+            {error ? (
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">{error}</div>
+            ) : null}
 
-            <button type="submit" disabled={isSaving || optionsLoading} className="w-full rounded-2xl bg-white px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-black disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={isSaving || optionsLoading}
+              className="w-full rounded-2xl bg-white px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-black disabled:opacity-60"
+            >
               {isSaving ? t.saving : isEdit ? t.saveEdit : t.saveCreate}
             </button>
           </SectionCard>
