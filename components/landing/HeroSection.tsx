@@ -1,72 +1,136 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { CAVO_BRAND } from "@/lib/brand";
-import { useMemo } from "react";
+import { ArrowRight, Crown, Headphones, Sparkles } from "lucide-react";
+import { motion, useMotionTemplate, useMotionValue, useTransform } from "framer-motion";
+import { createWhatsAppLink } from "@/lib/brand";
+import { useSiteLocale } from "@/lib/use-site-locale";
+
+const heroImage = "/images/cavo/men/air_force/grey_black/grey_black.png";
 
 export default function HeroSection() {
+  const { isArabic } = useSiteLocale();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const smoothX = useSpring(x, { stiffness: 120, damping: 18, mass: 0.6 });
-  const smoothY = useSpring(y, { stiffness: 120, damping: 18, mass: 0.6 });
-  const rotateY = useTransform(smoothX, [-100, 100], [-8, 8]);
-  const rotateX = useTransform(smoothY, [-100, 100], [8, -8]);
-  const glow = useMemo(() => ({ background: "radial-gradient(circle at center, rgba(245,158,11,0.32), rgba(245,158,11,0.08) 35%, transparent 65%)" }), []);
+  const rotateX = useTransform(y, [-120, 120], [8, -8]);
+  const rotateY = useTransform(x, [-120, 120], [-8, 8]);
+  const glow = useMotionTemplate`radial-gradient(520px circle at ${x}px ${y}px, rgba(245,158,11,0.18), transparent 58%)`;
+
+  const copy = {
+    eyebrow: isArabic ? "أحذية Mirror Quality" : "Shoes Prime Mirror",
+    titleA: isArabic ? "أناقة فاخرة." : "Premium Footwear.",
+    titleB: isArabic ? "هوية جريئة." : "Bold Identity.",
+    description: isArabic
+      ? "تشكيلة مختارة للرجالي والحريمي والأطفال، بتفاصيل راقية وإحساس فاخر يناسب عرض كافو الجديد."
+      : "Mirror quality sneakers curated for men, women, and kids with a luxury-first presentation built around Cavo.",
+    primary: isArabic ? "استكشف التشكيلة" : "Browse Collection",
+    secondary: isArabic ? "روابط التواصل" : "Contact Links",
+    highlights: [
+      {
+        title: isArabic ? "Mirror Quality" : "Mirror Quality",
+        text: isArabic ? "تشطيب فاخر ولمسة أوضح" : "Premium finish and elevated detail",
+        icon: Crown,
+      },
+      {
+        title: isArabic ? "مختار بعناية" : "Handpicked",
+        text: isArabic ? "براندات قوية وموديلات مميزة" : "Strong brands and selected drops",
+        icon: Sparkles,
+      },
+      {
+        title: isArabic ? "دعم سريع" : "Fast Support",
+        text: isArabic ? "واتساب وروابط مباشرة" : "WhatsApp and direct links",
+        icon: Headphones,
+      },
+    ],
+  };
 
   return (
-    <section className="px-4 pt-8 md:px-6 md:pt-10">
-      <div className="mx-auto grid max-w-7xl gap-6 overflow-hidden rounded-[2.8rem] border border-white/10 bg-[linear-gradient(135deg,#09090c_0%,#11131c_55%,#0c0d10_100%)] p-6 shadow-[0_25px_120px_rgba(0,0,0,0.5)] md:grid-cols-[1.05fr_0.95fr] md:p-8">
-        <div className="flex flex-col justify-center">
-          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-black uppercase tracking-[0.28em] text-amber-400">
-            {CAVO_BRAND.tagline}
-          </motion.p>
+    <section className="pb-8 pt-6 md:pb-10 md:pt-8">
+      <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="rounded-[2.4rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_30px_110px_rgba(0,0,0,0.42)] backdrop-blur-xl md:p-8">
+          <div className="inline-flex rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-amber-300">
+            {copy.eyebrow}
+          </div>
 
-          <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mt-4 max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl">
-            Smooth premium catalog design with a luxury 3D feel.
-          </motion.h1>
+          <h1 className="mt-5 max-w-3xl text-5xl font-black leading-[0.95] text-white md:text-6xl xl:text-7xl">
+            {copy.titleA}
+            <span className="mt-2 block text-[#F5B229]">{copy.titleB}</span>
+          </h1>
 
-          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="mt-6 max-w-2xl text-base leading-8 text-zinc-400 md:text-lg">
-            Cavo is built as a high-end showcase for men, women, kids, and selected featured drops. The site is for presentation only, while the application handles the full shopping flow later.
-          </motion.p>
+          <p className="mt-5 max-w-2xl text-base leading-8 text-zinc-300 md:text-lg">{copy.description}</p>
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="mt-8 flex flex-wrap gap-4">
-            <Link href="/store/products" className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-black transition hover:brightness-110">
-              Browse collection <ArrowRight className="h-4 w-4" />
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Link href="/store/products" className="inline-flex items-center justify-center gap-3 rounded-[1.2rem] bg-amber-400 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-black transition hover:bg-amber-300">
+              {copy.primary}
+              <ArrowRight className={`h-4 w-4 ${isArabic ? "rotate-180" : ""}`} />
             </Link>
-            <Link href="/store/contact" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-white transition hover:border-amber-500/30 hover:text-amber-300">
-              Contact links
+            <Link href="/store/contact" className="inline-flex items-center justify-center rounded-[1.2rem] border border-amber-400/25 bg-transparent px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-amber-200 transition hover:border-amber-300/40 hover:bg-white/[0.03]">
+              {copy.secondary}
             </Link>
-          </motion.div>
+          </div>
+
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
+            {copy.highlights.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="rounded-[1.4rem] border border-white/8 bg-white/[0.02] p-4">
+                  <Icon className="h-5 w-5 text-amber-300" />
+                  <div className="mt-4 text-sm font-black text-white">{item.title}</div>
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">{item.text}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div
-          className="relative flex items-center justify-center overflow-hidden rounded-[2.2rem] border border-white/10 bg-black/40 px-5 py-10"
+        <motion.div
+          className="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-4 shadow-[0_35px_120px_rgba(0,0,0,0.48)] backdrop-blur-xl md:p-5"
           onMouseMove={(event) => {
-            const bounds = event.currentTarget.getBoundingClientRect();
-            x.set(event.clientX - bounds.left - bounds.width / 2);
-            y.set(event.clientY - bounds.top - bounds.height / 2);
+            const rect = event.currentTarget.getBoundingClientRect();
+            x.set(event.clientX - rect.left);
+            y.set(event.clientY - rect.top);
           }}
           onMouseLeave={() => {
             x.set(0);
             y.set(0);
           }}
         >
-          <div className="absolute inset-0 opacity-90" style={glow} />
-          <div className="absolute -left-10 top-10 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
-          <div className="absolute -right-8 bottom-0 h-56 w-56 rounded-full bg-amber-300/10 blur-3xl" />
+          <motion.div className="absolute inset-0 opacity-90" style={{ backgroundImage: glow }} />
+          <div className="absolute -left-10 top-10 h-40 w-40 rounded-full bg-amber-500/12 blur-3xl" />
+          <div className="absolute -right-10 bottom-4 h-52 w-52 rounded-full bg-amber-300/10 blur-3xl" />
 
-          <motion.div style={{ rotateX, rotateY, transformPerspective: 1200 }} className="relative z-10 w-full max-w-[520px]">
-            <div className="relative rounded-[2.2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.01))] p-4 shadow-[0_35px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-              <img src="/images/brand/hero.jpg" alt="Cavo hero" className="h-[420px] w-full rounded-[1.8rem] object-cover shadow-[0_25px_90px_rgba(0,0,0,0.35)] md:h-[500px]" />
-              <div className="absolute inset-x-10 bottom-8 rounded-[1.6rem] border border-white/10 bg-black/40 p-5 backdrop-blur-xl">
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-300">Cavo Collection</p>
-                <p className="mt-2 text-sm leading-7 text-zinc-300">Brand-led showcase, refined movement, and a polished premium presentation built to feel smooth on every screen.</p>
+          <motion.div style={{ rotateX, rotateY, transformPerspective: 1200 }} className="relative z-10">
+            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/35">
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-4 md:px-5">
+                <div>
+                  <div className="text-[11px] font-black uppercase tracking-[0.22em] text-amber-300">{copy.eyebrow}</div>
+                  <div className="mt-2 text-2xl font-black text-white">CAVO</div>
+                </div>
+                <a
+                  href={createWhatsAppLink(isArabic ? "أهلاً كافو، أريد معرفة المقاسات المتاحة." : "Hello Cavo, I want to know the available sizes.")}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-zinc-200"
+                >
+                  WhatsApp
+                </a>
+              </div>
+
+              <div className="relative min-h-[420px] bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.12),transparent_52%)] md:min-h-[560px]">
+                <img src={heroImage} alt="Cavo premium sneaker" className="absolute inset-0 h-full w-full object-cover object-center opacity-95" />
+                <div className="absolute inset-x-4 bottom-4 rounded-[1.6rem] border border-white/10 bg-black/55 p-5 backdrop-blur-xl md:inset-x-5 md:bottom-5 md:p-6">
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-amber-300">{isArabic ? "القطعة الأساسية" : "Featured Pair"}</p>
+                  <h3 className="mt-3 text-2xl font-black text-white md:text-3xl">{isArabic ? "Air Force Grey Black" : "Air Force Grey Black"}</h3>
+                  <p className="mt-2 max-w-xl text-sm leading-7 text-zinc-300">
+                    {isArabic
+                      ? "موديل من صور المشروع نفسها، بتفاصيل أنيقة وخلفية مناسبة لهوية كافو الفاخرة."
+                      : "A cleaner hero pair taken from the project visuals, styled to anchor the storefront with a stronger luxury identity."}
+                  </p>
+                </div>
               </div>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

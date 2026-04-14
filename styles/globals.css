@@ -83,3 +83,26 @@ input, textarea, select {
 
 
 .luxury-ring { box-shadow: 0 0 0 1px rgba(251,191,36,.12), 0 18px 80px rgba(0,0,0,.42); }
+
+
+@keyframes cavo-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.cavo-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: cavo-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.cavo-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (max-width: 768px) {
+  .cavo-marquee-track {
+    animation-duration: 20s;
+  }
+}
