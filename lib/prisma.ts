@@ -1,4 +1,6 @@
-type PrismaClientLike = Record<string, unknown>;
+import type { PrismaClient as PrismaClientType } from "@prisma/client";
+
+type PrismaClientLike = PrismaClientType;
 
 declare global {
   var __cavoPrisma: PrismaClientLike | undefined;
