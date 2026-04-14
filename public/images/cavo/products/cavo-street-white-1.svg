@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f3f3f3"/>
+      <stop offset="100%" stop-color="#050607"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#g)" rx="72"/>
+  <circle cx="980" cy="180" r="120" fill="#111111" opacity="0.08"/>
+  <circle cx="190" cy="1030" r="170" fill="#111111" opacity="0.06"/>
+  <rect x="120" y="120" width="960" height="960" rx="54" fill="none" stroke="#111111" opacity="0.18"/>
+  <text x="600" y="520" text-anchor="middle" fill="#111111" font-size="108" font-family="Inter, Arial, sans-serif" font-weight="800">Cavo Street</text>
+  <text x="600" y="620" text-anchor="middle" fill="#111111" font-size="44" font-family="Inter, Arial, sans-serif" opacity="0.78">White</text>
+  <text x="140" y="1060" fill="#111111" font-size="34" font-family="Inter, Arial, sans-serif" letter-spacing="14">CAVO</text>
+</svg>

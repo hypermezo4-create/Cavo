@@ -1,0 +1,17 @@
+node_modules
+.next
+.env
+.env.local
+.env.production
+*.log
+firebase-debug.log*
+.vercel
+*.tsbuildinfo
+coverage
+cavo-fe9e8-firebase-adminsdk-*.json
+
+.env
+.env.local
+.env.*
+cavo-fe9e8-firebase-adminsdk-fbsvc-847ad43589.json
+cavo-vercel-import.env

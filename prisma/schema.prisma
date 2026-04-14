@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  name         String?
+  role         UserRole @default(ADMIN)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model StoreConfig {
+  id               String   @id @default("cavo-store")
+  storeName        String   @default("Cavo")
+  defaultLocale    String   @default("en")
+  supportedLocales String[]
+  priceVisibility  String   @default("hidden")
+  shippingCityEn   String
+  shippingCityAr   String
+  shippingNoteEn   String   @db.Text
+  shippingNoteAr   String   @db.Text
+  addressEn        String   @db.Text
+  addressAr        String   @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  nameEn    String
+  nameAr    String
+  image     String?
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  nameEn    String
+  nameAr    String
+  logoUrl   String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id                 String          @id @default(cuid())
+  slug               String          @unique
+  sku                String?         @unique
+  nameEn             String
+  nameAr             String
+  descriptionEn      String          @db.Text
+  descriptionAr      String          @db.Text
+  shortDescriptionEn String?         @db.Text
+  shortDescriptionAr String?         @db.Text
+  featuredImage      String?
+  colors             String[]
+  sizes              String[]
+  stock              Int             @default(0)
+  price              Decimal?        @db.Decimal(10, 2)
+  salePrice          Decimal?        @db.Decimal(10, 2)
+  currency           String          @default("EGP")
+  isActive           Boolean         @default(true)
+  isFeatured         Boolean         @default(false)
+  isNewArrival       Boolean         @default(false)
+  isOnSale           Boolean         @default(false)
+  categoryId         String
+  brandId            String
+  category           Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand              Brand           @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  images             ProductImage[]
+  variants           ProductVariant[]
+  reviews            ProductReview[]
+  orderItems         OrderItem[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([brandId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  sortOrder Int      @default(0)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id            String   @id @default(cuid())
+  productId     String
+  sku           String?
+  size          String
+  color         String
+  priceOverride Decimal? @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  image         String?
+  isActive      Boolean  @default(true)
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model ProductReview {
+  id           String   @id @default(cuid())
+  productId    String
+  rating       Int
+  title        String?
+  comment      String   @db.Text
+  customerName String?
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@index([productId])
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  customerName String
+  phone        String
+  city         String
+  area         String?
+  address      String?
+  notes        String?     @db.Text
+  shippingCity String      @default("Hurghada")
+  locale       String      @default("en")
+  status       OrderStatus @default(NEW)
+  items        OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  productId     String
+  quantity      Int      @default(1)
+  selectedSize  String?
+  selectedColor String?
+  unitPrice     Decimal? @db.Decimal(10, 2)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  createdAt     DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}

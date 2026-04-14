@@ -1,0 +1,3 @@
+export default function PrivacyPage() {
+  return <section className="px-6 py-10"><div className="mx-auto max-w-4xl glass rounded-[2.5rem] p-8"><h1 className="text-4xl font-black text-white">Privacy Policy</h1><div className="mt-6 space-y-4 text-sm leading-8 text-zinc-400"><p>Cavo stores customer inquiry information locally in the current browser session for demo management and order tracking.</p><p>Contact form entries, inquiry cart details, and order requests are used only to organize the storefront demo workflow.</p><p>No public price data is displayed on the storefront.</p></div></div></section>;
+}
