@@ -294,15 +294,44 @@ export async function updateProduct(id: string, input: UpdateProductInput): Prom
     const index = db.products.findIndex((product) => product.id === id);
     if (index < 0) throw new Error("Product not found");
     const currentProduct = db.products[index];
-    const updated = makeMemoryProduct(
-      {
-        ...currentProduct,
-        ...input,
-        sku: input.sku ?? currentProduct.sku ?? undefined,
-        name: input.name || currentProduct.name,
-      },
-      currentProduct,
-    );
+
+    const nextInput: CreateProductInput = {
+      slug: input.slug ?? currentProduct.slug,
+      sku: input.sku ?? currentProduct.sku ?? undefined,
+
+      name: input.name ?? currentProduct.name,
+      nameEn: input.nameEn ?? currentProduct.nameEn ?? currentProduct.name,
+      nameAr: input.nameAr ?? currentProduct.nameAr ?? currentProduct.name,
+
+      description: input.description ?? currentProduct.description ?? undefined,
+      descriptionEn: input.descriptionEn ?? currentProduct.descriptionEn ?? currentProduct.description ?? undefined,
+      descriptionAr: input.descriptionAr ?? currentProduct.descriptionAr ?? currentProduct.descriptionAr ?? undefined,
+
+      shortDescriptionEn: input.shortDescriptionEn ?? currentProduct.shortDescriptionEn ?? null,
+      shortDescriptionAr: input.shortDescriptionAr ?? currentProduct.shortDescriptionAr ?? null,
+
+      categoryId: input.categoryId ?? currentProduct.categoryId,
+      brandId: input.brandId ?? currentProduct.brandId,
+
+      image: input.image ?? currentProduct.image ?? undefined,
+      featuredImage: input.featuredImage ?? currentProduct.featuredImage ?? currentProduct.image ?? undefined,
+      images: input.images ?? currentProduct.images ?? [],
+
+      sizes: input.sizes ?? currentProduct.sizes ?? [],
+      colors: input.colors ?? currentProduct.colors ?? [],
+
+      stock: input.stock ?? currentProduct.stock ?? 0,
+      price: input.price ?? currentProduct.price ?? null,
+      salePrice: input.salePrice ?? currentProduct.salePrice ?? null,
+      currency: input.currency ?? currentProduct.currency ?? "EGP",
+
+      isActive: input.isActive ?? currentProduct.isActive ?? true,
+      isFeatured: input.isFeatured ?? currentProduct.isFeatured ?? false,
+      isNewArrival: input.isNewArrival ?? currentProduct.isNewArrival ?? false,
+      isOnSale: input.isOnSale ?? currentProduct.isOnSale ?? false,
+    };
+
+    const updated = makeMemoryProduct(nextInput, currentProduct);
     db.products[index] = updated;
     return deepClone(updated);
   }
@@ -498,7 +527,6 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     })),
   };
 }
-
 
 export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
   const allowed: OrderStatus[] = ["new", "confirmed", "processing", "shipped", "delivered", "cancelled"];
